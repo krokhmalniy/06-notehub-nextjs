@@ -14,11 +14,3 @@ export default function TanStackProvider({
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 }
-
-export async function fetchNoteById(id: string): Promise<Note> {
-  const response = await axiosInstance.get<Note>(`/notes/${id}`, {
-    headers: getAuthHeaders(),
-  });
-  return response.data;
-}
-
