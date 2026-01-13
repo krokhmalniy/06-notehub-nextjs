@@ -22,7 +22,7 @@ export default function Modal({ children, onClose }: ModalProps) {
     return () => window.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
-  // Блокування скролу
+  // Блокування скролу сторінки
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -32,7 +32,7 @@ export default function Modal({ children, onClose }: ModalProps) {
     };
   }, []);
 
-  // Рендер у портал
+  // Root для порталу
   const modalRoot =
     typeof window !== "undefined"
       ? document.getElementById("modal-root")
@@ -42,7 +42,7 @@ export default function Modal({ children, onClose }: ModalProps) {
 
   return createPortal(
     <div className={css.backdrop} onClick={onClose}>
-      <div className={css.modal} onClick={(event) => event.stopPropagation()}>
+      <div className={css.modal} onClick={(e) => e.stopPropagation()}>
         {children}
       </div>
     </div>,

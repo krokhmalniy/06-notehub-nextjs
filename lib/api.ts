@@ -30,6 +30,9 @@ const axiosInstance = axios.create({
   baseURL: "https://notehub-public.goit.study/api",
 });
 
+// ===========================
+// Fetch notes list
+// ===========================
 export async function fetchNotes({
   page,
   perPage,
@@ -53,13 +56,20 @@ export async function fetchNotes({
   return response.data;
 }
 
+// ===========================
+// Create note
+// ===========================
 export async function createNote(body: CreateNoteParams): Promise<Note> {
   const response = await axiosInstance.post<Note>("/notes", body, {
     headers: getAuthHeaders(),
   });
+
   return response.data;
 }
 
+// ===========================
+// Delete note
+// ===========================
 export async function deleteNote(id: string): Promise<Note> {
   const response = await axiosInstance.delete<Note>(`/notes/${id}`, {
     headers: getAuthHeaders(),
@@ -68,10 +78,13 @@ export async function deleteNote(id: string): Promise<Note> {
   return response.data;
 }
 
-
+// ===========================
+// Fetch single note
+// ===========================
 export async function fetchNoteById(id: string): Promise<Note> {
   const response = await axiosInstance.get<Note>(`/notes/${id}`, {
     headers: getAuthHeaders(),
   });
+
   return response.data;
 }

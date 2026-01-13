@@ -3,15 +3,23 @@ import {
   QueryClient,
   dehydrate,
 } from "@tanstack/react-query";
-import { fetchNotes } from "@/lib/api";
 import NotesClient from "./Notes.client";
+import { fetchNotes } from "@/lib/api";
 
-export default async function NotesPage() {
+export default async function NotesPage(props: {
+  searchParams: Promise<{
+    page?: string;
+    perPage?: string;
+    search?: string;
+  }>;
+}) {
+  const searchParams = await props.searchParams;
+
+  const page = Number(searchParams.page) || 1;
+  const perPage = Number(searchParams.perPage) || 12;
+  const search = searchParams.search || "";
+
   const queryClient = new QueryClient();
-
-  const page = 1;
-  const perPage = 12;
-  const search = "";
 
   await queryClient.prefetchQuery({
     queryKey: ["notes", { page, perPage, search }],

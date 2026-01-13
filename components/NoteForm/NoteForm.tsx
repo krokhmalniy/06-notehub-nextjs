@@ -15,9 +15,11 @@ const validationSchema = Yup.object({
   title: Yup.string()
     .min(3, "Title must be at least 3 characters")
     .required("Title is required"),
+
   content: Yup.string()
     .min(5, "Content must be at least 5 characters")
     .required("Content is required"),
+
   tag: Yup.string()
     .oneOf(["work", "personal", "home"], "Invalid tag")
     .required("Tag is required"),
@@ -27,10 +29,10 @@ export default function NoteForm({ onCancel }: NoteFormProps) {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (body: CreateNoteParams) => createNote(body),
+    mutationFn: (values: CreateNoteParams) => createNote(values),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
-      onCancel(); // закрыває форму після успіху
+      onCancel();
     },
   });
 
@@ -42,9 +44,7 @@ export default function NoteForm({ onCancel }: NoteFormProps) {
         tag: "work" as NoteTag,
       }}
       validationSchema={validationSchema}
-      onSubmit={(values) => {
-        mutation.mutate(values);
-      }}
+      onSubmit={(values) => mutation.mutate(values)}
     >
       <Form className={css.form}>
         <label className={css.label}>
@@ -74,7 +74,7 @@ export default function NoteForm({ onCancel }: NoteFormProps) {
             Create
           </button>
 
-          <button type="button" onClick={onCancel} className={css.cancelBtn}>
+          <button type="button" className={css.cancelBtn} onClick={onCancel}>
             Cancel
           </button>
         </div>
