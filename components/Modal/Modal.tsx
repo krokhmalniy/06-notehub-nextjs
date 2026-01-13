@@ -1,27 +1,51 @@
 "use client";
 
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import css from "./Modal.module.css";
 
-type Props = {
+interface ModalProps {
   children: React.ReactNode;
   onClose: () => void;
-};
+}
 
-export default function Modal({ children, onClose }: Props) {
+export default function Modal({ children, onClose }: ModalProps) {
+  // Закриття по Escape
   useEffect(() => {
-    function onEsc(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    window.addEventListener("keydown", onEsc);
-    return () => window.removeEventListener("keydown", onEsc);
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
-  return (
+  // Блокування скролу
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
+
+  // Рендер у портал
+  const modalRoot =
+    typeof window !== "undefined"
+      ? document.getElementById("modal-root")
+      : null;
+
+  if (!modalRoot) return null;
+
+  return createPortal(
     <div className={css.backdrop} onClick={onClose}>
-      <div className={css.modal} onClick={(e) => e.stopPropagation()}>
+      <div className={css.modal} onClick={(event) => event.stopPropagation()}>
         {children}
       </div>
-    </div>
+    </div>,
+    modalRoot
   );
 }

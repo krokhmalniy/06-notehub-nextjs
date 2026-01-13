@@ -1,37 +1,38 @@
 "use client";
 
+import ReactPaginate from "react-paginate";
 import css from "./Pagination.module.css";
 
-type Props = {
-  page: number;
+export interface PaginationProps {
+  page: number; // 1-based
   totalPages: number;
-  onPageChange: (page: number) => void;
-};
+  onChangePage: (page: number) => void;
+}
 
-export default function Pagination({ page, totalPages, onPageChange }: Props) {
+export default function Pagination({
+  page,
+  totalPages,
+  onChangePage,
+}: PaginationProps) {
   return (
-    <div className={css.pagination}>
-      <button
-        className={css.button}
-        type="button"
-        disabled={page <= 1}
-        onClick={() => onPageChange(page - 1)}
-      >
-        Prev
-      </button>
-
-      <span className={css.info}>
-        {page} / {totalPages}
-      </span>
-
-      <button
-        className={css.button}
-        type="button"
-        disabled={page >= totalPages}
-        onClick={() => onPageChange(page + 1)}
-      >
-        Next
-      </button>
+    <div className={css.paginationWrapper}>
+      <ReactPaginate
+        breakLabel="..."
+        previousLabel="<"
+        nextLabel=">"
+        pageRangeDisplayed={3}
+        marginPagesDisplayed={1}
+        pageCount={totalPages}
+        forcePage={page - 1} // ReactPaginate expects 0-based index
+        onPageChange={(event) => onChangePage(event.selected + 1)}
+        containerClassName={css.pagination}
+        pageClassName={css.page}
+        activeClassName={css.active}
+        previousClassName={css.prev}
+        nextClassName={css.next}
+        disabledClassName={css.disabled}
+        breakClassName={css.break}
+      />
     </div>
   );
 }

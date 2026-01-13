@@ -60,11 +60,14 @@ export async function createNote(body: CreateNoteParams): Promise<Note> {
   return response.data;
 }
 
-export async function deleteNote(id: string): Promise<void> {
-  await axiosInstance.delete(`/notes/${id}`, {
+export async function deleteNote(id: string): Promise<Note> {
+  const response = await axiosInstance.delete<Note>(`/notes/${id}`, {
     headers: getAuthHeaders(),
   });
+
+  return response.data;
 }
+
 
 export async function fetchNoteById(id: string): Promise<Note> {
   const response = await axiosInstance.get<Note>(`/notes/${id}`, {
