@@ -4,9 +4,7 @@ import { useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 import {
   keepPreviousData,
-  useMutation,
   useQuery,
-  useQueryClient,
 } from "@tanstack/react-query";
 
 import css from "./NotesPage.module.css";
@@ -17,8 +15,7 @@ import NoteList from "@/components/NoteList/NoteList";
 import Modal from "@/components/Modal/Modal";
 import NoteForm from "@/components/NoteForm/NoteForm";
 
-import { createNote, deleteNote, fetchNotes } from "@/lib/api";
-import type { CreateNoteParams } from "@/types/note";
+import { fetchNotes } from "@/lib/api";
 
 type Props = {
   initialPage: number;
@@ -31,7 +28,6 @@ export default function NotesClient({
   perPage,
   initialSearch,
 }: Props) {
-  const queryClient = useQueryClient();
 
   const [page, setPage] = useState(initialPage);
   const [search, setSearch] = useState(initialSearch);
@@ -50,34 +46,9 @@ export default function NotesClient({
     placeholderData: keepPreviousData,
   });
 
-  const createMutation = useMutation({
-    mutationFn: (payload: CreateNoteParams) => createNote(payload),
-    onSuccess: () => {
-      // після створення — повертаємось на 1 сторінку і оновлюємо список
-      setPage(1);
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-      setIsModalOpen(false);
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => deleteNote(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-    },
-  });
-
   function handleSearchChange(value: string) {
     setSearch(value);
     setPage(1);
-  }
-
-  function handleCreateNote(values: CreateNoteParams) {
-    createMutation.mutate(values);
-  }
-
-  function handleDeleteNote(id: string) {
-    deleteMutation.mutate(id);
   }
 
   const notes = data?.notes ?? [];
@@ -101,18 +72,17 @@ export default function NotesClient({
         <SearchBox value={search} onChange={handleSearchChange} />
 
         {isLoading && <p>Loading, please wait...</p>}
-
         {isError && <p>Something went wrong.</p>}
 
         {!isLoading && !isError && (
           <>
-            <NoteList notes={notes} onDelete={handleDeleteNote} />
+            <NoteList notes={notes} />
 
             {totalPages > 1 && (
               <Pagination
                 page={page}
                 totalPages={totalPages}
-                onPageChange={setPage}
+                onChangePage={setPage}
               />
             )}
           </>
@@ -120,7 +90,7 @@ export default function NotesClient({
 
         {isModalOpen && (
           <Modal onClose={() => setIsModalOpen(false)}>
-            <NoteForm onSubmit={handleCreateNote} />
+            <NoteForm onCancel={() => setIsModalOpen(false)} />
           </Modal>
         )}
       </div>
