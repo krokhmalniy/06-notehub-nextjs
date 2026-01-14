@@ -15,6 +15,8 @@ import NoteForm from "@/components/NoteForm/NoteForm";
 import { fetchNotes, createNote } from "@/lib/api";
 import type { CreateNoteParams } from "@/types/note";
 
+type NotesResponse = Awaited<ReturnType<typeof fetchNotes>>;
+
 interface NotesClientProps {
   initialPage: number;
   perPage: number;
@@ -34,32 +36,37 @@ export default function NotesClient({
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const queryKey = useMemo(
+  const queryKey: (string | number | undefined)[] = useMemo(
     () => ["notes", page, perPage, debouncedSearch],
     [page, perPage, debouncedSearch]
   );
 
-  const { data, isLoading, isError } = useQuery({
+  // --- FETCH NOTES ---
+  const { data, isLoading, isError } = useQuery<NotesResponse>(
     queryKey,
-    queryFn: () =>
+    () =>
       fetchNotes({
         page,
         perPage,
         search: debouncedSearch,
       }),
-    placeholderData: (prev) => prev, // без any
-    refetchOnMount: false,
-  });
+    {
+      keepPreviousData: true,
+      refetchOnMount: false,
+    }
+  );
 
+  // --- CREATE NOTE ---
   const createMutation = useMutation({
     mutationFn: (payload: CreateNoteParams) => createNote(payload),
     onSuccess: () => {
       setPage(1);
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      queryClient.invalidateQueries(["notes"]);
       setIsModalOpen(false);
     },
   });
 
+  // --- HANDLERS ---
   function handleSearchChange(value: string) {
     setSearch(value);
     setPage(1);
