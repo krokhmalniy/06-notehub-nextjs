@@ -10,11 +10,11 @@ interface SearchBoxProps {
 export default function SearchBox({ value, onChange }: SearchBoxProps) {
   return (
     <input
-      type="text"
       className={css.input}
-      placeholder="Search notes..."
+      type="text"
       value={value}
       onChange={(e) => onChange(e.target.value)}
+      placeholder="Search notes..."
     />
   );
 }

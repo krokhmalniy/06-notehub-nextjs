@@ -1,58 +1,36 @@
 "use client";
 
-import Link from "next/link";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteNote } from "@/lib/api";
-import type { Note } from "@/types/note";
+import ReactPaginate from "react-paginate";
+import css from "./Pagination.module.css";
 
-import css from "./NoteList.module.css";
-
-interface NoteListProps {
-  notes: Note[];
+interface PaginationProps {
+  page: number; // 1-based
+  totalPages: number;
+  onPageChange: (page: number) => void; // 1-based
 }
 
-export default function NoteList({ notes }: NoteListProps) {
-  const queryClient = useQueryClient();
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => deleteNote(id),
-    onSuccess: () => {
-      // invalidate cache
-      queryClient.invalidateQueries(["notes"]);
-    },
-  });
-
-  function handleDelete(id: string) {
-    deleteMutation.mutate(id);
-  }
-
-  if (notes.length === 0) {
-    return <p>No notes found.</p>;
-  }
-
+export default function Pagination({
+  page,
+  totalPages,
+  onPageChange,
+}: PaginationProps) {
   return (
-    <ul className={css.list}>
-      {notes.map((note) => (
-        <li key={note.id} className={css.item}>
-          <h3 className={css.title}>{note.title}</h3>
-          <p className={css.content}>{note.content}</p>
-          <p className={css.tag}>{note.tag}</p>
-
-          <div className={css.actions}>
-            <Link href={`/notes/${note.id}`} className={css.details}>
-              View details
-            </Link>
-
-            <button
-              type="button"
-              className={css.delete}
-              onClick={() => handleDelete(note.id)}
-            >
-              Delete
-            </button>
-          </div>
-        </li>
-      ))}
-    </ul>
+    <div className={css.wrapper}>
+      <ReactPaginate
+        pageCount={totalPages}
+        forcePage={Math.max(0, page - 1)} // ReactPaginate uses 0-based
+        onPageChange={({ selected }) => onPageChange(selected + 1)}
+        previousLabel="←"
+        nextLabel="→"
+        breakLabel="..."
+        containerClassName={css.container}
+        pageClassName={css.page}
+        pageLinkClassName={css.pageLink}
+        activeClassName={css.active}
+        previousClassName={css.nav}
+        nextClassName={css.nav}
+        disabledClassName={css.disabled}
+      />
+    </div>
   );
 }

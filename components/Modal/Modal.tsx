@@ -1,47 +1,53 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
+
 import css from "./Modal.module.css";
 
 interface ModalProps {
-  children: React.ReactNode;
   onClose: () => void;
+  children: React.ReactNode;
 }
 
-export default function Modal({ children, onClose }: ModalProps) {
-  const [mounted, setMounted] = useState(false);
+export default function Modal({ onClose, children }: ModalProps) {
+  // Портал-таргет: якщо в тебе є окремий div#modal-root — використай його.
+  // Якщо немає — безпечно падаємо на document.body.
+  const portalTarget =
+    typeof document !== "undefined"
+      ? document.getElementById("modal-root") ?? document.body
+      : null;
 
   useEffect(() => {
-    setMounted(true);
-    document.body.style.overflow = "hidden";
-
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
     };
 
-    window.addEventListener("keydown", handleKey);
+    window.addEventListener("keydown", handleKeyDown);
+
+    // Disable page scroll while modal is open
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
 
     return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", handleKey);
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
     };
   }, [onClose]);
 
-  if (!mounted) return null;
-
-  const root = document.getElementById("modal-root");
-  if (!root) return null;
+  if (!portalTarget) return null;
 
   return createPortal(
     <div
       className={css.backdrop}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
     >
-      <div className={css.modal}>{children}</div>
+      <div className={css.modal} onClick={(e) => e.stopPropagation()}>
+        {children}
+      </div>
     </div>,
-    root
+    portalTarget
   );
 }
