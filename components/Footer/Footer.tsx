@@ -1,17 +1,23 @@
+"use client";
+
 import css from "./Footer.module.css";
 
 export default function Footer() {
+  const year = new Date().getFullYear();
+
   return (
     <footer className={css.footer}>
       <div className={css.content}>
-        <p>© {new Date().getFullYear()} NoteHub. All rights reserved.</p>
+        <p className={css.text}>© {year} NoteHub. All rights reserved.</p>
 
         <div className={css.wrap}>
-          <p>Developer: your name</p>
+          <p className={css.text}>Developer: Your Name</p>
 
-          <p>
+          <p className={css.text}>
             Contact us:{" "}
-            <a href="mailto:student@notehub.app">student@notehub.app</a>
+            <a href="mailto:student@notehub.app" className={css.link}>
+              student@notehub.app
+            </a>
           </p>
         </div>
       </div>

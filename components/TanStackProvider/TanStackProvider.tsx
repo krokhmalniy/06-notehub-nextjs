@@ -1,25 +1,28 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  QueryClient,
+  QueryClientProvider,
+  Hydrate,
+} from "@tanstack/react-query";
 import { ReactNode, useState } from "react";
 
 interface TanStackProviderProps {
   children: ReactNode;
+  initialState?: unknown;
 }
 
-export default function TanStackProvider({ children }: TanStackProviderProps) {
-  // QueryClient має створюватися ОДИН раз у клієнті
-  const [client] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: 1000 * 60, // 1 хвилина
-            refetchOnWindowFocus: false,
-          },
-        },
-      })
-  );
+export default function TanStackProvider({
+  children,
+  initialState,
+}: TanStackProviderProps) {
+  // Створюємо клієнт лише один раз
+  const [queryClient] = useState(() => new QueryClient());
 
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      {/* Hydrate потрібно для SSR-prefetch із сторінок */}
+      <Hydrate state={initialState}>{children}</Hydrate>
+    </QueryClientProvider>
+  );
 }

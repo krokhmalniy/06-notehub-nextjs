@@ -1,25 +1,24 @@
 .footer {
+  background-color: #222;
   padding: 20px 0;
-  margin-top: 40px;
-  border-top: 1px solid #e5e5e5;
+  color: #fff;
 }
 
 .content {
-  max-width: 760px;
+  max-width: 960px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 16px;
 }
 
 .wrap {
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
-.wrap p {
+.text {
   margin: 4px 0;
 }
 
-.footer a {
-  color: #0070f3;
+.link {
+  color: #4aa3ff;
   text-decoration: underline;
-  font-weight: 500;
 }

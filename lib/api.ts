@@ -30,9 +30,7 @@ const axiosInstance = axios.create({
   baseURL: "https://notehub-public.goit.study/api",
 });
 
-// ===========================
-// Fetch notes list
-// ===========================
+// Fetch list of notes
 export async function fetchNotes({
   page,
   perPage,
@@ -43,7 +41,7 @@ export async function fetchNotes({
   const params = {
     page,
     perPage,
-    ...(search?.trim() ? { search: search.trim() } : {}),
+    ...(search && search.trim() ? { search: search.trim() } : {}),
     ...(tag ? { tag } : {}),
     ...(sortBy ? { sortBy } : {}),
   };
@@ -56,9 +54,7 @@ export async function fetchNotes({
   return response.data;
 }
 
-// ===========================
-// Create note
-// ===========================
+// Create a new note
 export async function createNote(body: CreateNoteParams): Promise<Note> {
   const response = await axiosInstance.post<Note>("/notes", body, {
     headers: getAuthHeaders(),
@@ -67,9 +63,7 @@ export async function createNote(body: CreateNoteParams): Promise<Note> {
   return response.data;
 }
 
-// ===========================
-// Delete note
-// ===========================
+// Delete a note by ID — must return Note
 export async function deleteNote(id: string): Promise<Note> {
   const response = await axiosInstance.delete<Note>(`/notes/${id}`, {
     headers: getAuthHeaders(),
@@ -78,9 +72,7 @@ export async function deleteNote(id: string): Promise<Note> {
   return response.data;
 }
 
-// ===========================
-// Fetch single note
-// ===========================
+// Fetch note by ID — SSR + CSR
 export async function fetchNoteById(id: string): Promise<Note> {
   const response = await axiosInstance.get<Note>(`/notes/${id}`, {
     headers: getAuthHeaders(),

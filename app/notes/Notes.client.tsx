@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState, useMemo } from "react";
 import { useDebounce } from "use-debounce";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -12,11 +12,10 @@ import NoteList from "@/components/NoteList/NoteList";
 import Modal from "@/components/Modal/Modal";
 import NoteForm from "@/components/NoteForm/NoteForm";
 
-import { createNote, deleteNote, fetchNotes } from "@/lib/api";
-import type { CreateNoteParams, Note } from "@/types/note";
-import type { FetchNotesResponse } from "@/lib/api";
+import { fetchNotes, createNote, deleteNote } from "@/lib/api";
+import type { CreateNoteParams } from "@/types/note";
 
-type Props = {
+type NotesClientProps = {
   initialPage: number;
   perPage: number;
   initialSearch: string;
@@ -26,7 +25,7 @@ export default function NotesClient({
   initialPage,
   perPage,
   initialSearch,
-}: Props) {
+}: NotesClientProps) {
   const queryClient = useQueryClient();
 
   const [page, setPage] = useState(initialPage);
@@ -35,13 +34,11 @@ export default function NotesClient({
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // stable key for React Query
   const queryKey = useMemo(
     () => ["notes", { page, perPage, search: debouncedSearch }] as const,
     [page, perPage, debouncedSearch]
   );
 
-  // Fetch notes with React Query v5
   const { data, isLoading, isError } = useQuery({
     queryKey,
     queryFn: () =>
@@ -50,11 +47,9 @@ export default function NotesClient({
         perPage,
         search: debouncedSearch,
       }),
-    // React Query v5 version of keepPreviousData
-    placeholderData: (prev: FetchNotesResponse | undefined) => prev,
+    keepPreviousData: true, // нова правильна опція для React Query v5
   });
 
-  // Create note mutation
   const createMutation = useMutation({
     mutationFn: (payload: CreateNoteParams) => createNote(payload),
     onSuccess: () => {
@@ -64,7 +59,6 @@ export default function NotesClient({
     },
   });
 
-  // Delete note mutation
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteNote(id),
     onSuccess: () => {
@@ -77,15 +71,15 @@ export default function NotesClient({
     setPage(1);
   }
 
-  function handleCreateNote(values: CreateNoteParams) {
+  function handleCreate(values: CreateNoteParams) {
     createMutation.mutate(values);
   }
 
-  function handleDeleteNote(id: string) {
+  function handleDelete(id: string) {
     deleteMutation.mutate(id);
   }
 
-  const notes: Note[] = data?.notes ?? [];
+  const notes = data?.notes ?? [];
   const totalPages = data?.totalPages ?? 1;
 
   return (
@@ -94,11 +88,7 @@ export default function NotesClient({
         <div className={css.header}>
           <h1 className={css.title}>Notes</h1>
 
-          <button
-            className={css.button}
-            type="button"
-            onClick={() => setIsModalOpen(true)}
-          >
+          <button className={css.button} onClick={() => setIsModalOpen(true)}>
             Create note
           </button>
         </div>
@@ -110,7 +100,7 @@ export default function NotesClient({
 
         {!isLoading && !isError && (
           <>
-            <NoteList notes={notes} onDelete={handleDeleteNote} />
+            <NoteList notes={notes} onDelete={handleDelete} />
 
             {totalPages > 1 && (
               <Pagination
@@ -124,7 +114,7 @@ export default function NotesClient({
 
         {isModalOpen && (
           <Modal onClose={() => setIsModalOpen(false)}>
-            <NoteForm onSubmit={handleCreateNote} />
+            <NoteForm onSubmit={handleCreate} />
           </Modal>
         )}
       </div>

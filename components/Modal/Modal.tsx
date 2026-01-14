@@ -10,41 +10,45 @@ interface ModalProps {
 }
 
 export default function Modal({ children, onClose }: ModalProps) {
-  // Закриття по Escape
+  // portal root
+  const modalRoot = document.getElementById("modal-root");
+
+  // close with Escape key
   useEffect(() => {
-    const handleEsc = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+    function handleEsc(e: KeyboardEvent) {
+      if (e.key === "Escape") {
         onClose();
       }
-    };
+    }
 
     window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
+
+    return () => {
+      window.removeEventListener("keydown", handleEsc);
+    };
   }, [onClose]);
 
-  // Блокування скролу сторінки
+  // disable scrolling when modal open
   useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
     return () => {
-      document.body.style.overflow = originalOverflow;
+      document.body.style.overflow = "";
     };
   }, []);
 
-  // Root для порталу
-  const modalRoot =
-    typeof window !== "undefined"
-      ? document.getElementById("modal-root")
-      : null;
+  // close on backdrop click
+  function handleBackdropClick(e: React.MouseEvent<HTMLDivElement>) {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  }
 
   if (!modalRoot) return null;
 
   return createPortal(
-    <div className={css.backdrop} onClick={onClose}>
-      <div className={css.modal} onClick={(e) => e.stopPropagation()}>
-        {children}
-      </div>
+    <div className={css.backdrop} onClick={handleBackdropClick}>
+      <div className={css.modal}>{children}</div>
     </div>,
     modalRoot
   );

@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import css from "./Header.module.css";
 
@@ -11,10 +13,15 @@ export default function Header() {
       <nav aria-label="Main Navigation">
         <ul className={css.navigation}>
           <li>
-            <Link href="/">Home</Link>
+            <Link href="/" className={css.link}>
+              Home
+            </Link>
           </li>
+
           <li>
-            <Link href="/notes">Notes</Link>
+            <Link href="/notes" className={css.link}>
+              Notes
+            </Link>
           </li>
         </ul>
       </nav>

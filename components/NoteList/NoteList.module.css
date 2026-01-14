@@ -1,67 +1,63 @@
 .list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 16px;
-  margin-top: 24px;
+  padding: 0;
+  margin: 24px 0;
+  list-style: none;
 }
 
 .item {
-  padding: 20px;
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  background-color: #fff;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .title {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
   margin-bottom: 8px;
+  color: #222;
 }
 
 .content {
-  font-size: 16px;
   margin-bottom: 8px;
+  color: #444;
   line-height: 1.4;
 }
 
 .tag {
-  font-size: 14px;
+  font-size: 13px;
   color: #666;
   margin-bottom: 12px;
 }
 
 .actions {
   display: flex;
-  gap: 10px;
+  gap: 12px;
 }
 
-.detailsBtn {
-  padding: 8px 14px;
-  background-color: #0070f3;
-  color: white;
-  border-radius: 6px;
+.details {
+  color: #4aa3ff;
   text-decoration: none;
-  font-size: 14px;
-  font-weight: 600;
-  transition: background-color 0.2s ease;
+  font-weight: 500;
 }
 
-.detailsBtn:hover {
-  background-color: #0059c9;
+.details:hover {
+  text-decoration: underline;
 }
 
-.deleteBtn {
-  padding: 8px 14px;
-  background-color: #d9534f;
-  color: white;
-  border-radius: 6px;
+.delete {
+  background-color: #ff4d4d;
   border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
-  font-weight: 600;
-  transition: background-color 0.2s ease;
 }
 
-.deleteBtn:hover {
-  background-color: #c9302c;
+.delete:hover {
+  background-color: #d93636;
 }

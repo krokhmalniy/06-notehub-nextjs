@@ -14,13 +14,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
         <TanStackProvider>
           <Header />
           {children}
           <Footer />
         </TanStackProvider>
+
+        {/* Portal target must be OUTSIDE providers */}
+        <div id="modal-root"></div>
       </body>
     </html>
   );
