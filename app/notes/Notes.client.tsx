@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { useDebounce } from "use-debounce";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Hydrate } from "@tanstack/react-query";
 
 import css from "./NotesPage.module.css";
 
@@ -12,20 +13,46 @@ import NoteList from "@/components/NoteList/NoteList";
 import Modal from "@/components/Modal/Modal";
 import NoteForm from "@/components/NoteForm/NoteForm";
 
+import type { CreateNoteParams, Note } from "@/types/note";
 import { fetchNotes, createNote, deleteNote } from "@/lib/api";
-import type { CreateNoteParams } from "@/types/note";
 
-type NotesClientProps = {
+import type { DehydratedState } from "@tanstack/react-query";
+
+export interface NotesClientProps {
   initialPage: number;
   perPage: number;
   initialSearch: string;
-};
+  dehydratedState: DehydratedState;
+}
 
 export default function NotesClient({
   initialPage,
   perPage,
   initialSearch,
+  dehydratedState,
 }: NotesClientProps) {
+  return (
+    <Hydrate state={dehydratedState}>
+      <NotesContent
+        initialPage={initialPage}
+        perPage={perPage}
+        initialSearch={initialSearch}
+      />
+    </Hydrate>
+  );
+}
+
+interface NotesContentProps {
+  initialPage: number;
+  perPage: number;
+  initialSearch: string;
+}
+
+function NotesContent({
+  initialPage,
+  perPage,
+  initialSearch,
+}: NotesContentProps) {
   const queryClient = useQueryClient();
 
   const [page, setPage] = useState(initialPage);
@@ -35,19 +62,15 @@ export default function NotesClient({
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const queryKey = useMemo(
-    () => ["notes", { page, perPage, search: debouncedSearch }] as const,
+    () => ["notes", page, perPage, debouncedSearch],
     [page, perPage, debouncedSearch]
   );
 
   const { data, isLoading, isError } = useQuery({
     queryKey,
-    queryFn: () =>
-      fetchNotes({
-        page,
-        perPage,
-        search: debouncedSearch,
-      }),
-    keepPreviousData: true, // нова правильна опція для React Query v5
+    queryFn: () => fetchNotes({ page, perPage, search: debouncedSearch }),
+    refetchOnMount: false,
+    placeholderData: (prev: unknown) => prev as any,
   });
 
   const createMutation = useMutation({
@@ -79,7 +102,7 @@ export default function NotesClient({
     deleteMutation.mutate(id);
   }
 
-  const notes = data?.notes ?? [];
+  const notes: Note[] = data?.notes ?? [];
   const totalPages = data?.totalPages ?? 1;
 
   return (
@@ -88,7 +111,11 @@ export default function NotesClient({
         <div className={css.header}>
           <h1 className={css.title}>Notes</h1>
 
-          <button className={css.button} onClick={() => setIsModalOpen(true)}>
+          <button
+            className={css.button}
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+          >
             Create note
           </button>
         </div>

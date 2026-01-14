@@ -1,12 +1,17 @@
 "use client";
 
+import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { fetchNoteById } from "@/lib/api";
-import { useParams } from "next/navigation";
 
+import type { DehydratedState } from "@tanstack/react-query";
 import css from "./NoteDetailsPage.module.css";
 
-export default function NoteDetailsClient() {
+export interface NoteDetailsClientProps {
+  dehydratedState: DehydratedState;
+}
+
+export default function NoteDetailsClient({}: NoteDetailsClientProps) {
   const params = useParams();
   const id = params?.id as string;
 
@@ -17,17 +22,15 @@ export default function NoteDetailsClient() {
   } = useQuery({
     queryKey: ["note", id],
     queryFn: () => fetchNoteById(id),
-    // потрібно ОБОВ'ЯЗКОВО додати
     refetchOnMount: false,
-    refetchOnWindowFocus: false,
   });
 
   if (isLoading) {
-    return <p className={css.status}>Loading, please wait...</p>;
+    return <p>Loading, please wait...</p>;
   }
 
   if (isError || !note) {
-    return <p className={css.status}>Something went wrong.</p>;
+    return <p>Something went wrong.</p>;
   }
 
   return (
@@ -38,10 +41,7 @@ export default function NoteDetailsClient() {
         </div>
 
         <p className={css.content}>{note.content}</p>
-
-        <p className={css.date}>
-          Created: {new Date(note.createdAt).toLocaleString()}
-        </p>
+        <p className={css.date}>{note.createdAt}</p>
       </div>
     </div>
   );
