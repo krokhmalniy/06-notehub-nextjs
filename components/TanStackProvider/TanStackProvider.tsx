@@ -1,31 +1,25 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 
-export default function TanStackProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  // Singleton QueryClient
+interface TanStackProviderProps {
+  children: ReactNode;
+}
+
+export default function TanStackProvider({ children }: TanStackProviderProps) {
+  // QueryClient має створюватися ОДИН раз у клієнті
   const [client] = useState(
     () =>
       new QueryClient({
         defaultOptions: {
           queries: {
+            staleTime: 1000 * 60, // 1 хвилина
             refetchOnWindowFocus: false,
-            retry: 1,
           },
         },
       })
   );
 
-  return (
-    <QueryClientProvider client={client}>
-      {children}
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
-  );
+  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
 }

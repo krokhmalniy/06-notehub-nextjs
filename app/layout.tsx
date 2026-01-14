@@ -1,10 +1,9 @@
-import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "NoteHub",
   description: "A simple notes application built with Next.js",
 };
@@ -19,13 +18,9 @@ export default function RootLayout({
       <body>
         <TanStackProvider>
           <Header />
-
-          <main>{children}</main>
-
+          {children}
           <Footer />
         </TanStackProvider>
-
-        <div id="modal-root"></div>
       </body>
     </html>
   );

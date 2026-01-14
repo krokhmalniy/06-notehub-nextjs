@@ -4,34 +4,41 @@ import ReactPaginate from "react-paginate";
 import css from "./Pagination.module.css";
 
 export interface PaginationProps {
-  page: number; // 1-based
+  page: number;
   totalPages: number;
-  onChangePage: (page: number) => void;
+  onPageChange: (page: number) => void;
 }
 
 export default function Pagination({
   page,
   totalPages,
-  onChangePage,
+  onPageChange,
 }: PaginationProps) {
+  function handlePageClick(selectedItem: { selected: number }) {
+    onPageChange(selectedItem.selected + 1);
+  }
+
   return (
-    <div className={css.paginationWrapper}>
+    <div className={css.pagination}>
       <ReactPaginate
-        breakLabel="..."
+        pageCount={totalPages}
+        forcePage={page - 1}
+        onPageChange={handlePageClick}
         previousLabel="<"
         nextLabel=">"
-        pageRangeDisplayed={3}
-        marginPagesDisplayed={1}
-        pageCount={totalPages}
-        forcePage={page - 1} // ReactPaginate expects 0-based index
-        onPageChange={(event) => onChangePage(event.selected + 1)}
+        // CSS module classes
         containerClassName={css.pagination}
-        pageClassName={css.page}
+        pageClassName={css.pageItem}
+        pageLinkClassName={css.pageLink}
         activeClassName={css.active}
-        previousClassName={css.prev}
-        nextClassName={css.next}
         disabledClassName={css.disabled}
-        breakClassName={css.break}
+        previousClassName={css.pageItem}
+        nextClassName={css.pageItem}
+        previousLinkClassName={css.pageLink}
+        nextLinkClassName={css.pageLink}
+        breakLabel="..."
+        breakClassName={css.pageItem}
+        breakLinkClassName={css.pageLink}
       />
     </div>
   );

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import css from "./NotesPage.module.css";
 
@@ -12,9 +12,11 @@ import NoteList from "@/components/NoteList/NoteList";
 import Modal from "@/components/Modal/Modal";
 import NoteForm from "@/components/NoteForm/NoteForm";
 
-import { fetchNotes } from "@/lib/api";
+import { createNote, deleteNote, fetchNotes } from "@/lib/api";
+import type { CreateNoteParams, Note } from "@/types/note";
+import type { FetchNotesResponse } from "@/lib/api";
 
-type NotesClientProps = {
+type Props = {
   initialPage: number;
   perPage: number;
   initialSearch: string;
@@ -24,18 +26,22 @@ export default function NotesClient({
   initialPage,
   perPage,
   initialSearch,
-}: NotesClientProps) {
+}: Props) {
+  const queryClient = useQueryClient();
+
   const [page, setPage] = useState(initialPage);
   const [search, setSearch] = useState(initialSearch);
   const [debouncedSearch] = useDebounce(search, 300);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // stable key for React Query
   const queryKey = useMemo(
     () => ["notes", { page, perPage, search: debouncedSearch }] as const,
     [page, perPage, debouncedSearch]
   );
 
+  // Fetch notes with React Query v5
   const { data, isLoading, isError } = useQuery({
     queryKey,
     queryFn: () =>
@@ -44,17 +50,43 @@ export default function NotesClient({
         perPage,
         search: debouncedSearch,
       }),
-    placeholderData: keepPreviousData,
-    refetchOnMount: false,
+    // React Query v5 version of keepPreviousData
+    placeholderData: (prev: FetchNotesResponse | undefined) => prev,
   });
 
-  const notes = data?.notes ?? [];
-  const totalPages = data?.totalPages ?? 1;
+  // Create note mutation
+  const createMutation = useMutation({
+    mutationFn: (payload: CreateNoteParams) => createNote(payload),
+    onSuccess: () => {
+      setPage(1);
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      setIsModalOpen(false);
+    },
+  });
+
+  // Delete note mutation
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteNote(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+    },
+  });
 
   function handleSearchChange(value: string) {
     setSearch(value);
     setPage(1);
   }
+
+  function handleCreateNote(values: CreateNoteParams) {
+    createMutation.mutate(values);
+  }
+
+  function handleDeleteNote(id: string) {
+    deleteMutation.mutate(id);
+  }
+
+  const notes: Note[] = data?.notes ?? [];
+  const totalPages = data?.totalPages ?? 1;
 
   return (
     <main className={css.main}>
@@ -78,13 +110,13 @@ export default function NotesClient({
 
         {!isLoading && !isError && (
           <>
-            <NoteList notes={notes} />
+            <NoteList notes={notes} onDelete={handleDeleteNote} />
 
             {totalPages > 1 && (
               <Pagination
                 page={page}
                 totalPages={totalPages}
-                onChangePage={setPage}
+                onPageChange={setPage}
               />
             )}
           </>
@@ -92,7 +124,7 @@ export default function NotesClient({
 
         {isModalOpen && (
           <Modal onClose={() => setIsModalOpen(false)}>
-            <NoteForm onCancel={() => setIsModalOpen(false)} />
+            <NoteForm onSubmit={handleCreateNote} />
           </Modal>
         )}
       </div>
