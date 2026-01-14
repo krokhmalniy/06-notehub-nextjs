@@ -7,7 +7,12 @@ export default function getQueryClient() {
     client = new QueryClient({
       defaultOptions: {
         queries: {
-          staleTime: 1000 * 60 * 5, // 5 хвилин
+          // 5 хвилин дані вважаються свіжими
+          staleTime: 1000 * 60 * 5,
+
+          // час життя кешу (react-query v4 використовує cacheTime)
+          cacheTime: 1000 * 60 * 10,
+
           refetchOnWindowFocus: false,
         },
       },

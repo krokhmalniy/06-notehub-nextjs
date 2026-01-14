@@ -1,4 +1,4 @@
-import { dehydrate } from "@tanstack/react-query";
+import { Hydrate, dehydrate } from "@tanstack/react-query";
 import getQueryClient from "@/lib/getQueryClient";
 import { fetchNoteById } from "@/lib/api";
 import NoteDetailsClient from "./NoteDetails.client";
@@ -9,10 +9,8 @@ export default async function NoteDetailsPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-
   const queryClient = getQueryClient();
 
-  // PREFETCH на сервері
   await queryClient.prefetchQuery({
     queryKey: ["note", id],
     queryFn: () => fetchNoteById(id),
@@ -20,5 +18,9 @@ export default async function NoteDetailsPage({
 
   const dehydratedState = dehydrate(queryClient);
 
-  return <NoteDetailsClient dehydratedState={dehydratedState} />;
+  return (
+    <Hydrate state={dehydratedState}>
+      <NoteDetailsClient />
+    </Hydrate>
+  );
 }

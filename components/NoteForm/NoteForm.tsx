@@ -1,26 +1,35 @@
 "use client";
 
-import { Formik, Form, Field, ErrorMessage as FormikError } from "formik";
+import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 
 import type { CreateNoteParams, NoteTag } from "@/types/note";
 import css from "./NoteForm.module.css";
 
-export interface NoteFormProps {
+interface NoteFormProps {
   onSubmit: (values: CreateNoteParams) => void;
-  onCancel?: () => void;
+  onCancel: () => void;
 }
 
-// Yup-схема валідації
-const validationSchema = Yup.object({
+const TAG_OPTIONS: NoteTag[] = [
+  "Todo",
+  "Work",
+  "Personal",
+  "Meeting",
+  "Shopping",
+];
+
+// Yup validation schema
+const NoteSchema = Yup.object({
   title: Yup.string()
-    .required("Title is required")
-    .min(3, "Title must be at least 3 characters"),
+    .min(3, "Title must be at least 3 characters")
+    .max(50, "Title cannot exceed 50 characters")
+    .required("Title is required"),
   content: Yup.string()
-    .required("Content is required")
-    .min(5, "Content must be at least 5 characters"),
+    .min(5, "Content must be at least 5 characters")
+    .required("Content is required"),
   tag: Yup.mixed<NoteTag>()
-    .oneOf(["Todo", "Work", "Personal", "Meeting", "Shopping"], "Invalid tag")
+    .oneOf(TAG_OPTIONS, "Invalid tag")
     .required("Tag is required"),
 });
 
@@ -32,54 +41,50 @@ export default function NoteForm({ onSubmit, onCancel }: NoteFormProps) {
         content: "",
         tag: "Todo" as NoteTag,
       }}
-      validationSchema={validationSchema}
-      onSubmit={(values, actions) => {
-        onSubmit(values);
-        actions.resetForm();
-      }}
+      validationSchema={NoteSchema}
+      onSubmit={(values) => onSubmit(values)}
     >
-      <Form className={css.form}>
-        <label className={css.label}>
-          Title:
-          <Field name="title" className={css.input} />
-          <FormikError name="title" component="p" className={css.error} />
-        </label>
+      {({ isSubmitting }) => (
+        <Form className={css.form}>
+          <div className={css.field}>
+            <label htmlFor="title">Title</label>
+            <Field id="title" name="title" />
+            <ErrorMessage name="title" component="p" className={css.error} />
+          </div>
 
-        <label className={css.label}>
-          Content:
-          <Field
-            as="textarea"
-            name="content"
-            className={css.textarea}
-            rows={4}
-          />
-          <FormikError name="content" component="p" className={css.error} />
-        </label>
+          <div className={css.field}>
+            <label htmlFor="content">Content</label>
+            <Field id="content" name="content" as="textarea" rows={5} />
+            <ErrorMessage name="content" component="p" className={css.error} />
+          </div>
 
-        <label className={css.label}>
-          Tag:
-          <Field as="select" name="tag" className={css.select}>
-            <option value="Todo">Todo</option>
-            <option value="Work">Work</option>
-            <option value="Personal">Personal</option>
-            <option value="Meeting">Meeting</option>
-            <option value="Shopping">Shopping</option>
-          </Field>
-          <FormikError name="tag" component="p" className={css.error} />
-        </label>
+          <div className={css.field}>
+            <label htmlFor="tag">Tag</label>
+            <Field id="tag" name="tag" as="select">
+              {TAG_OPTIONS.map((tag) => (
+                <option key={tag} value={tag}>
+                  {tag}
+                </option>
+              ))}
+            </Field>
+            <ErrorMessage name="tag" component="p" className={css.error} />
+          </div>
 
-        <div className={css.actions}>
-          <button type="submit" className={css.submitBtn}>
-            Create
-          </button>
+          <div className={css.actions}>
+            <button
+              type="submit"
+              className={css.submit}
+              disabled={isSubmitting}
+            >
+              Create
+            </button>
 
-          {onCancel && (
-            <button type="button" className={css.cancelBtn} onClick={onCancel}>
+            <button type="button" className={css.cancel} onClick={onCancel}>
               Cancel
             </button>
-          )}
-        </div>
-      </Form>
+          </div>
+        </Form>
+      )}
     </Formik>
   );
 }

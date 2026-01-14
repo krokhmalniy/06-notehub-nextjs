@@ -14,16 +14,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body>
         <TanStackProvider>
           <Header />
           {children}
+          {/* Portal для модалки */}
+          <div id="modal-root"></div>
           <Footer />
         </TanStackProvider>
-
-        {/* Portal target must be OUTSIDE providers */}
-        <div id="modal-root"></div>
       </body>
     </html>
   );

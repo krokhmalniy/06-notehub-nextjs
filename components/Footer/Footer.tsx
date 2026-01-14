@@ -15,7 +15,7 @@ export default function Footer() {
 
           <p className={css.text}>
             Contact us:{" "}
-            <a href="mailto:student@notehub.app" className={css.link}>
+            <a className={css.link} href="mailto:student@notehub.app">
               student@notehub.app
             </a>
           </p>

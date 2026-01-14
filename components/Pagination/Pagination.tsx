@@ -3,10 +3,10 @@
 import ReactPaginate from "react-paginate";
 import css from "./Pagination.module.css";
 
-export interface PaginationProps {
+interface PaginationProps {
   page: number;
   totalPages: number;
-  onPageChange: (selectedPage: number) => void;
+  onPageChange: (page: number) => void;
 }
 
 export default function Pagination({
@@ -14,28 +14,18 @@ export default function Pagination({
   totalPages,
   onPageChange,
 }: PaginationProps) {
-  function handlePageChange(event: { selected: number }) {
-    onPageChange(event.selected + 1);
-  }
-
   return (
-    <div className={css.paginationWrapper}>
-      <ReactPaginate
-        breakLabel="..."
-        nextLabel="Next >"
-        previousLabel="< Prev"
-        onPageChange={handlePageChange}
-        pageRangeDisplayed={3}
-        marginPagesDisplayed={1}
-        pageCount={totalPages}
-        forcePage={page - 1}
-        containerClassName={css.pagination}
-        activeClassName={css.activePage}
-        pageClassName={css.pageItem}
-        previousClassName={css.pageItem}
-        nextClassName={css.pageItem}
-        breakClassName={css.pageItem}
-      />
-    </div>
+    <ReactPaginate
+      containerClassName={css.pagination}
+      pageClassName={css.page}
+      activeClassName={css.active}
+      previousClassName={css.previous}
+      nextClassName={css.next}
+      disabledClassName={css.disabled}
+      breakClassName={css.break}
+      pageCount={totalPages}
+      forcePage={page - 1}
+      onPageChange={(selectedItem) => onPageChange(selectedItem.selected + 1)}
+    />
   );
 }

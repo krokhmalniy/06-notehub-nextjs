@@ -2,16 +2,11 @@
 
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { fetchNoteById } from "@/lib/api";
 
-import type { DehydratedState } from "@tanstack/react-query";
+import { fetchNoteById } from "@/lib/api";
 import css from "./NoteDetailsPage.module.css";
 
-export interface NoteDetailsClientProps {
-  dehydratedState: DehydratedState;
-}
-
-export default function NoteDetailsClient({}: NoteDetailsClientProps) {
+export default function NoteDetailsClient() {
   const params = useParams();
   const id = params?.id as string;
 
@@ -39,7 +34,6 @@ export default function NoteDetailsClient({}: NoteDetailsClientProps) {
         <div className={css.header}>
           <h2>{note.title}</h2>
         </div>
-
         <p className={css.content}>{note.content}</p>
         <p className={css.date}>{note.createdAt}</p>
       </div>

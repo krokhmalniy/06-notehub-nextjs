@@ -1,22 +1,14 @@
 .input {
   width: 100%;
-  max-width: 400px;
   padding: 10px 14px;
-
-  font-size: 16px;
-  border: 1px solid #ccc;
+  font-size: 14px;
   border-radius: 8px;
-
-  background-color: #fff;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #ccc;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  outline: none;
 }
 
 .input:focus {
-  outline: none;
-  border-color: #4aa3ff;
-  box-shadow: 0 0 4px rgba(74, 163, 255, 0.4);
-}
-
-.input:hover {
-  border-color: #999;
+  border-color: #3b4cca;
 }
