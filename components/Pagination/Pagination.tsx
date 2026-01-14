@@ -1,31 +1,58 @@
 "use client";
 
-import ReactPaginate from "react-paginate";
-import css from "./Pagination.module.css";
+import Link from "next/link";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteNote } from "@/lib/api";
+import type { Note } from "@/types/note";
 
-interface PaginationProps {
-  page: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
+import css from "./NoteList.module.css";
+
+interface NoteListProps {
+  notes: Note[];
 }
 
-export default function Pagination({
-  page,
-  totalPages,
-  onPageChange,
-}: PaginationProps) {
+export default function NoteList({ notes }: NoteListProps) {
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteNote(id),
+    onSuccess: () => {
+      // invalidate cache
+      queryClient.invalidateQueries(["notes"]);
+    },
+  });
+
+  function handleDelete(id: string) {
+    deleteMutation.mutate(id);
+  }
+
+  if (notes.length === 0) {
+    return <p>No notes found.</p>;
+  }
+
   return (
-    <ReactPaginate
-      containerClassName={css.pagination}
-      pageClassName={css.page}
-      activeClassName={css.active}
-      previousClassName={css.previous}
-      nextClassName={css.next}
-      disabledClassName={css.disabled}
-      breakClassName={css.break}
-      pageCount={totalPages}
-      forcePage={page - 1}
-      onPageChange={(selectedItem) => onPageChange(selectedItem.selected + 1)}
-    />
+    <ul className={css.list}>
+      {notes.map((note) => (
+        <li key={note.id} className={css.item}>
+          <h3 className={css.title}>{note.title}</h3>
+          <p className={css.content}>{note.content}</p>
+          <p className={css.tag}>{note.tag}</p>
+
+          <div className={css.actions}>
+            <Link href={`/notes/${note.id}`} className={css.details}>
+              View details
+            </Link>
+
+            <button
+              type="button"
+              className={css.delete}
+              onClick={() => handleDelete(note.id)}
+            >
+              Delete
+            </button>
+          </div>
+        </li>
+      ))}
+    </ul>
   );
 }

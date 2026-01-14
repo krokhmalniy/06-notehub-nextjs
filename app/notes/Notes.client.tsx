@@ -41,7 +41,7 @@ export default function NotesClient({
     [page, perPage, debouncedSearch]
   );
 
-  // --- FETCH NOTES ---
+  // Fetch notes (React Query v4 syntax)
   const { data, isLoading, isError } = useQuery<NotesResponse>(
     queryKey,
     () =>
@@ -56,7 +56,7 @@ export default function NotesClient({
     }
   );
 
-  // --- CREATE NOTE ---
+  // Create note
   const createMutation = useMutation({
     mutationFn: (payload: CreateNoteParams) => createNote(payload),
     onSuccess: () => {
@@ -66,7 +66,6 @@ export default function NotesClient({
     },
   });
 
-  // --- HANDLERS ---
   function handleSearchChange(value: string) {
     setSearch(value);
     setPage(1);
@@ -107,7 +106,7 @@ export default function NotesClient({
               <Pagination
                 page={page}
                 totalPages={totalPages}
-                onPageChange={setPage}
+                onPageChange={(selectedPage) => setPage(selectedPage)}
               />
             )}
           </>
