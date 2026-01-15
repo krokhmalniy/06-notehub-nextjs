@@ -11,10 +11,6 @@ import css from "./NoteForm.module.css";
 
 interface NoteFormProps {
   onCancel: () => void;
-  /**
-   * Опційно: якщо хочеш після успішного створення робити додаткові дії
-   * (наприклад, скидати page на 1 або закривати модалку зовні)
-   */
   onCreated?: () => void;
 }
 
@@ -26,11 +22,7 @@ const validationSchema = Yup.object({
     .min(3, "Min 3 characters")
     .max(50, "Max 50 characters")
     .required("Required"),
-  content: Yup.string()
-    .trim()
-    .min(3, "Min 3 characters")
-    .max(500, "Max 500 characters")
-    .required("Required"),
+  content: Yup.string().trim().max(500, "Max 500 characters").notRequired(),
   tag: Yup.mixed<NoteTag>().oneOf(TAGS, "Invalid tag").required("Required"),
 });
 
@@ -40,7 +32,6 @@ export default function NoteForm({ onCancel, onCreated }: NoteFormProps) {
   const mutation = useMutation({
     mutationFn: (payload: CreateNoteParams) => createNote(payload),
     onSuccess: () => {
-      // Важливо: оновити список нотаток
       queryClient.invalidateQueries({ queryKey: ["notes"] });
       onCreated?.();
       onCancel();
@@ -58,10 +49,17 @@ export default function NoteForm({ onCancel, onCreated }: NoteFormProps) {
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={(values, helpers) => {
-        mutation.mutate(values, {
-          onSettled: () => helpers.setSubmitting(false),
-          onSuccess: () => helpers.resetForm(),
-        });
+        mutation.mutate(
+          {
+            ...values,
+            title: values.title.trim(),
+            content: values.content?.trim() ?? "",
+          },
+          {
+            onSettled: () => helpers.setSubmitting(false),
+            onSuccess: () => helpers.resetForm(),
+          }
+        );
       }}
     >
       {({ isSubmitting }) => (
