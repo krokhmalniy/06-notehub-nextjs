@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useDebounce } from "use-debounce";
 
 import { fetchNotes } from "@/lib/api";
-import type { FetchNotesResponse } from "@/lib/api";
+import type { Note } from "@/types/note";
 
 import SearchBox from "@/components/SearchBox/SearchBox";
 import Pagination from "@/components/Pagination/Pagination";
@@ -12,57 +13,75 @@ import NoteList from "@/components/NoteList/NoteList";
 import Modal from "@/components/Modal/Modal";
 import NoteForm from "@/components/NoteForm/NoteForm";
 
-import css from "./NotesPage.module.css";
+import css from "./Notes.module.css";
+
+interface FetchNotesResponse {
+  notes: Note[];
+  totalPages: number;
+}
+
+interface NotesClientProps {
+  searchQuery: string;
+}
 
 const PER_PAGE = 12;
 
-export default function NotesClient() {
-  const [page, setPage] = useState<number>(1);
-  const [search, setSearch] = useState<string>("");
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+export default function NotesClient({ searchQuery }: NotesClientProps) {
+  const [search, setSearch] = useState(searchQuery);
+  const [page, setPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // ✅ debounce пошукового запиту
+  const [debouncedSearch] = useDebounce(search, 500);
 
   const { data, isLoading, isError } = useQuery<FetchNotesResponse>({
-    queryKey: ["notes", { page, perPage: PER_PAGE, search }],
-    queryFn: () => fetchNotes({ page, perPage: PER_PAGE, search }),
-    keepPreviousData: true,
+    queryKey: ["notes", { page, perPage: PER_PAGE, search: debouncedSearch }],
+    queryFn: () =>
+      fetchNotes({
+        page,
+        perPage: PER_PAGE,
+        search: debouncedSearch,
+      }),
+    placeholderData: keepPreviousData,
     refetchOnMount: false,
   });
-
-  const notes = data?.notes ?? [];
-  const totalPages = data?.totalPages ?? 1;
-
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
     setPage(1);
   };
 
-  if (isLoading) return <p>Loading, please wait...</p>;
-  if (isError) return <p>Something went wrong.</p>;
+  const handlePageChange = (selectedPage: number) => {
+    setPage(selectedPage);
+  };
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
+  if (isLoading) {
+    return <p>Loading, please wait...</p>;
+  }
+
+  if (isError || !data) {
+    return <p>Something went wrong.</p>;
+  }
 
   return (
     <div className={css.container}>
-      <div className={css.toolbar}>
+      <div className={css.header}>
         <SearchBox value={search} onChange={handleSearchChange} />
-
-        <button className={css.button} type="button" onClick={openModal}>
-          Create note
+        <button type="button" className={css.addButton} onClick={openModal}>
+          Add note
         </button>
       </div>
 
-      {notes.length > 0 ? (
-        <NoteList notes={notes} />
-      ) : (
-        <p className={css.empty}>No notes found.</p>
-      )}
+      <NoteList notes={data.notes} />
 
-      {totalPages > 1 && (
+      {data.totalPages > 1 && (
         <Pagination
           page={page}
-          totalPages={totalPages}
-          onPageChange={setPage}
+          totalPages={data.totalPages}
+          onPageChange={handlePageChange}
         />
       )}
 
@@ -71,7 +90,6 @@ export default function NotesClient() {
           <NoteForm
             onCancel={closeModal}
             onCreated={() => {
-              // опційно: після створення — повернутись на 1 сторінку
               setPage(1);
             }}
           />
